@@ -43,7 +43,7 @@ class MyMock {
 ### (보호받지 않는 콤마를 처리하는 법)
 
 괄호로 둘러 쌓이지 않은 콤마같이 보호받지 않는 콤마는 `MOCK_METHOD` 가 정확하게
-아규먼트(Arguments)를 파싱하는 것을 방해한다.
+인자(Arguments)를 파싱하는 것을 방해한다.
 
 ```cpp {.bad}
 class MockFoo {
@@ -63,8 +63,8 @@ class MockFoo {
 };
 ```
 
-일반적으로 C++에서는 리턴값이나 아규먼트(argument)를 Wrapping 하는 것이
-불가능하다는 것을 참고하세요. `MOCK_METHOD` 는 괄호를 제거한다.
+일반적으로 C++에서는 리턴값이나 인자(argument)를 Wrapping 하는 것이
+불가능하다는 것을 참고로 하라. `MOCK_METHOD`는 괄호를 제거한다.
 
 Solution 2 - alias 로 정의:
 
@@ -81,12 +81,12 @@ class MockFoo {
 ### Mocking Private or Protected Methods
 ### (Private / Protected 메서드를 대체(Mock)하기)
 
-베이스의 클래스의 대체 대상 메서드가 `public`, `protected`, `private` 과
-상관없이, 대체 메서드(Mock Method) 정의법(`MOCK_METHOD`)은 항상 대체 클래스(mock class)의
-`public:` 구역에 들어가야 합니다. public 대체 메서드로 선언하는 것이 대체 클래스(mock class)
+베이스의 클래스의 대체 대상 메서드가 `public`, `protected`, `private` 중 무엇이든
+상관없이, 대체 메서드(Mock Method) 정의방법(`MOCK_METHOD`)은 항상 대체 클래스(mock class)의
+`public:` 구역에 들어가야 한다. public 대체 메서드로 선언하는 것이 대체 클래스(mock class)
 외부에서도 Mock function 의 reference를 `ON_CALL`, `EXPECT_CALL` 을 통해 사용하는 것을
-가능하게 한다.
-(네, C++ 은 subclass 를 통해 베이스 클래스의 access level 을 변경하는 것이 가능하다.) 예를 보면:
+가능하게 하기 위함이다.
+(그렇다, C++ 은 subclass 를 통해 베이스 클래스의 access level 을 변경하는 것이 가능하다.) 예를 보면:
 
 
 ```cpp
@@ -107,16 +107,17 @@ class MockFoo : public Foo {
   ...
   MOCK_METHOD(bool, Transform, (Gadget* g), (override));
 
-  // The following must be in the public section, even though the
-  // methods are protected or private in the base class.
+  // base class 에는 private, protected 이지만,
+  // MOCK_METHOD는 아래와 같이 모두 public 구역에 들어가야 한다.
   MOCK_METHOD(void, Resume, (), (override));
   MOCK_METHOD(int, GetTimeOut, (), (override));
 };
 ```
 
-### Mocking Overloaded Methods (오버로드 메서드를 대체하기)
+### Mocking Overloaded Methods
+### (오버로드 메서드를 대체하기)
 
-오버로드 메서드도 일반적으로 대체(mock)할 수 있습니다. 특별한 주의사항은 없다.
+오버로드 메서드도 일반적인 방법으로 대체(mock)할 수 있으며, 특별한 주의사항은 없다.
 
 ```cpp
 class Foo {
@@ -146,8 +147,7 @@ class MockFoo : public Foo {
 
 **참고:** 만약 모든 오버로드 메서드를 대체(mock)하지 않은다면, 컴파일러가
 베이스 클래스의 숨겨진 몇몇 메서드에 대해 warning 을 발생시킬 것입니다.
-이것을 해결하려면, scope 내에서 숨겨진 메서드를 제공할 `using`을 사용하기
-바란다.
+이것을 해결하려면, scope 내에서 숨겨진 메서드를 제공할 `using`을 사용하라.
 
 ```cpp
 class MockFoo : public Foo {
@@ -191,7 +191,7 @@ gMock 은 Hi-perf dependency injection에서 사용되는 non-virtual funtion �
 
 이러한 경우, 실제 클래스로 이루어진 공통적인 베이스 클래스를 공유하는 대신,
 대체 클래스(mock class)는 실제 클래스에 *unrelated* 될 것이고, 반면에 동일한 시그너처를
-가진 메서드를 포함합니다. non-virtual 메서드를 대체(mock)하는 문법은 virtual 메서드를
+가진 메서드를 포함한다. non-virtual 메서드를 대체(mock)하는 문법은 virtual 메서드를
 대체 하는 것과 동일(*same*) 하다. (`override` 만 추가하는 것이 아니다)
 
 
@@ -215,16 +215,16 @@ class MockPacketStream {
 };
 ```
 
-실제 클래스와는 다르게 대체클래스(mock class)는 `AppendPacket()`를 정의하지 않은 것을
-주의하십시오. 테스트 중에 호출하지 않는다면 정의하지 않는 것도 무방하다.
+실제 클래스와는 다르게 대체클래스(mock class)는 `AppendPacket()`를 정의하지 않았다.
+테스트 중에 호출하지 않는다면 정의하지 않는 것도 무방하다.
 
 다음으로, 테스트에서는 `MockPacketStream`을 사용하고, 실제 동작에서는 `ConcretePacketStream`를
-사용하는 방법이 필요합니다. function 은 버추얼이 아니고, 두 클래스는 unrelated 이므로,
+사용하는 방법이 필요하다면, function 은 버추얼이 아니고, 두 클래스는 unrelated 이므로,
 컴파일 시점(*compile time*)에서 어떤것을 사용할 것인지 결정해야 한다. (런타임과 반대로)
 
 한가지 방법은 packet stream 을 사용할 필요가 있는 코드를 템플릿화하는 것이다,
 좀더 특별하게는 packet stream 의 type 을 위한 템플릿 타입의 인자(Argument)를 주는
-것입니다. 실제 코드에서는 `ConcretePacketStream`으로 템플릿으로 인스턴화하고,
+것이다. 실제 코드에서는 `ConcretePacketStream`으로 템플릿으로 인스턴화하고,
 테스트에서는 `MockPacketStream`를 가지는 템플릿으르 인스턴스화 할 수 있다.
 예를 들면, 아래와 같이 작성할 수 있다.
 
@@ -258,7 +258,7 @@ class PacketReader {
 ### (Free Function 대체(mock))
 
 gMock을 이용하여 Free Function(C-style 함수나 static 메서드)를 대체하는 것도
-가능합니다. 추상 클래스의 인터페이스를 이용하여 코드를 재작성하기만 하면 된다.
+가능하다. 추상 클래스의 인터페이스를 이용하여 코드를 재작성하기만 하면 된다.
 
 Free Function을 직접 호출(say, `OpenFile`)하는 대신, 그것에 대한 인터페이스를 만들고
 Free Function을 호출하는 concrete subclass 를 구성한다.
@@ -283,7 +283,7 @@ class File : public FileInterface {
 파일을 오픈하기 위해서는 `FileInterface`를 사용해야 하며, fuction 을 대체하기도
 쉽다.
 
-혼란이 많은 것 같아 보이지만, 실제에서는 같은 인터페이스를 가지는 multiple related
+혼란이 많을것 같아 보이지만, 실제에서는 같은 인터페이스를 가지는 multiple related
 function을 종종 사용합니다, 그렇게 하여 per-function 구문적인 오버헤드가 낮아질 것이다.
 
 버추얼 function 에 의해 발생하는 성능 오버헤드가 우려된다면, 프로파일링을 통해
@@ -296,8 +296,8 @@ function을 종종 사용합니다, 그렇게 하여 per-function 구문적인 �
 
 
 일반적인 `MOCK_METHOD` 매크로 소개되기 전에는 `MOCK_METHODn` 로 불리는 매크로 집합을
-사용하여 대체(mock)을 만들었습니다. 새로운 `MOCK_METHOD` 매크로로 변경하는 것을 권장하지만,
-예전 매크로는 여전히 사용이 가능합니다.
+사용하여 대체(mock)을 만들었다. 새로운 `MOCK_METHOD` 매크로로 변경하는 것을 권장하지만,
+예전 매크로는 여전히 사용이 가능하다.
 
 
 `MOCK_METHODn` 계열 매크로와 `MOCK_METHOD` 매크로의 차이점:
@@ -358,7 +358,7 @@ Foo, bool(int))` </td> </tr> <tr> <td> New </td> <td> `MOCK_METHOD(bool, Foo,
 
 대체 메서드(mock method)에 `EXPECT_CALL` 이 없는데 호출 되었다면,
 "uninteresting call" 이라고 하며, 메서드의 기본 동작(`ON_CALL()`을 사용하여 지정될
-수 있는)을 빼앗아 갈 것이다. 현재, uninteresting call은 gMock 이 warnig을 출력하는
+수 있는)을 빼앗아 갈 것이다. 현재는 uninteresting call은 gMock 이 warnig을 출력하는
 것을 기본으로 하고 있다.(앞으로는, warning을 출력하지 않는 것을 기본으로 할 것이다)
 
 그러나, 어떨때는 이러한 uninteresting call을 무시하기를 원하고, 어떨때는
@@ -442,7 +442,16 @@ TEST(...) {
     `StrictMock<MockFoo>`은 정확하게 동작하지 않을 수 있다. 이런 문제를 고치고 싶지만,
     기존의 테스트를 클린업하는 것이 필요하다. http://b/28934720 에서 문제점을
     추적할 수 있다.
-3.  `MockFoo`의 생성자나 소멸자에서는 대체(mock) 오브젝트가 nice하거나 strict **하지않다**.
+3.  `MockFoo`의 생성자나 소멸자 내부에서는 대체(mock) 오브젝트가 nice하거나 strict
+    **하지않다**. 이런점으로 인해 `this` 오브젝트의 생성자나 소멸자에서 대체(mock)
+    메서드를 호출한다면 surprise 가 발생할 수도 있다. (그러나 이러한 Behavior는 C++의
+    일반적인 규칙과는 일치한다: 만약 생성자나 소멸자가 `this` 오브젝트의 버추얼 메서드를
+    호출한다면, 그 메서드는 non-virtual 메서드처럼 취급된다. 다른말로, 베이스 클래스의
+    생성자와 소멸자에 대해서는, `this` 오브젝트가 상속받은 클래스가 아니라 베이스
+    클래스의 인스턴스처럼 동작한다. 이런 규칙은 안정성을 위해 필요하다. 그렇지 않다면,
+    베이스 생성자가 상속 클래스가 초기화 되기 전이 그 멤버를 사용할 수 있다.
+
+    
     During the constructor or destructor of `MockFoo`, the mock object is *not*
     nice or strict. This may cause surprises if the constructor or destructor
     calls a mock method on `this` object. (This behavior, however, is consistent
