@@ -1,19 +1,19 @@
-# gMock Cookbook
+# gMock Cookbook (gMock 사용법)
 
 <!-- GOOGLETEST_CM0012 DO NOT DELETE -->
 
-You can find recipes for using gMock here. If you haven't yet, please read
-[this](for_dummies.md) first to make sure you understand the basics.
+여기에서는 gMock에 대한 다양한 사용방법을 확인할 수 있습니다. 아직 gMock 이 무엇인가를
+읽어보지 않으셨다면, 기초를 다지기 이해 [이것](for_dummies.md)을 읽어보시기 바랍니다.
 
-**Note:** gMock lives in the `testing` name space. For readability, it is
-recommended to write `using ::testing::Foo;` once in your file before using the
-name `Foo` defined by gMock. We omit such `using` statements in this section for
-brevity, but you should do it in your own code.
+**주의:** gMock은 `testing` name space 에 존재할 수 있습니다. 가독성을 위해 gMock에 의해
+정의되는 `Foo` 라는 이름을 사용하기 전에 파일내에서 한번은 `using ::testing::Foo;` 라고
+사용하는 것을 권장합니다. 여기서는 간략하기 표현하기 위해 이러한 `using` 문을 생략합니다.
+그렇지만, 여러분은 코드내에 넣으셔야 합니다.
 
-## Creating Mock Classes
+## Creating Mock Classes (Mock 클래스 만들기)
 
-Mock classes are defined as normal classes, using the `MOCK_METHOD` macro to
-generate mocked methods. The macro gets 3 or 4 parameters:
+Mock 클래스는 일반적인 클래스처럼 정의되며, `MOCK_METHOD` macro 를 사용하여, 원래 메서드를
+대체(mocked)하는 메서드를 만듭니다. 매크로는 3, 4개의 파라미터를 가집니다.
 
 ```cpp
 class MyMock {
@@ -23,18 +23,19 @@ class MyMock {
 };
 ```
 
-The first 3 parameters are simply the method declaration, split into 3 parts.
-The 4th parameter accepts a closed list of qualifiers, which affect the
-generated method:
+첫번째 3개의 파리미터는 메서드를 3부분으로 나누어 선언하는 간단한 방법입니다, 
+4번째 파라미터는 만들어지는 메서드에 영향을 주는 한정자(qualifiers)의 목록을 위해
+사용됩니다.
 
-*   **`const`** - Makes the mocked method a `const` method. Required if
-    overriding a `const` method.
-*   **`override`** - Marks the method with `override`. Recommended if overriding
-    a `virtual` method.
-*   **`noexcept`** - Marks the method with `noexcept`. Required if overriding a
-    `noexcept` method.
-*   **`Calltype(...)`** - Sets the call type for the method (e.g. to
-    `STDMETHODCALLTYPE`), useful in Windows.
+
+*   **`const`** - 대체 메서드(mocked method)를 `const` 메서드로 만듭니다. `const`
+    메서드를 오버라이딩(overriding) 하기 위해 필요합니다.
+*   **`override`** - `override` 메서드를 표시합니다. `virtual` 메서드를 
+    오버라이딩(overriding) 하기 위해 필요합니다..
+*   **`noexcept`** - `noexcept` 메서를 표시합니다. `noexcept` 메서드를
+    오버라이딩(overriding) 하기 위해 필요합니다.
+*   **`Calltype(...)`** - 메서드의 호출 타입(call type)을 지정합니다. (예,
+    `STDMETHODCALLTYPE`), 윈도우즈에서 유용합니다.
 
 ### Dealing with unprotected commas
 
