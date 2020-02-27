@@ -1,19 +1,21 @@
-# gMock Cookbook (gMock 사용법)
+# gMock Cookbook
+# (gMock 사용법)
 
 <!-- GOOGLETEST_CM0012 DO NOT DELETE -->
 
-여기에서는 gMock에 대한 다양한 사용방법을 확인할 수 있습니다. 아직 gMock 이 무엇인가를
-읽어보지 않으셨다면, 기초를 다지기 이해 [이것](for_dummies.md)을 읽어보시기 바랍니다.
+여기에서는 gMock에 대한 다양한 사용방법을 확인할 수 있다. 아직 gMock 이 무엇인가를
+읽어보지 않았다면, 기초를 다지기 위해 [이것](for_dummies.md)을 읽어보기 바란다.
 
-**주의:** gMock은 `testing` name space 에 존재할 수 있습니다. 가독성을 위해 gMock에 의해
+**주의:** gMock은 `testing` name space 에 존재할 수 있다. 가독성을 위해 gMock에 의해
 정의되는 `Foo` 라는 이름을 사용하기 전에 파일내에서 한번은 `using ::testing::Foo;` 라고
-사용하는 것을 권장합니다. 여기서는 간략하기 표현하기 위해 이러한 `using` 문을 생략합니다.
-그렇지만, 여러분은 코드내에 넣으셔야 합니다.
+사용하는 것을 권장한다. 여기서는 간략하기 표현하기 위해 이러한 `using` 문을 생략한다.
+그렇지만, 여러분은 코드내에 넣는것을 권장한다.
 
-## Creating Mock Classes (Mock 클래스 만들기)
+## Creating Mock Classes
+## (Mock 클래스 만들기)
 
 Mock 클래스는 일반적인 클래스처럼 정의되며, `MOCK_METHOD` macro 를 사용하여, 원래 메서드를
-대체(mocked)하는 메서드를 만듭니다. 매크로는 3, 4개의 파라미터를 가집니다.
+대체(mocked)하는 메서드를 만든다. 매크로는 3, 4개의 파라미터를 가진다.
 
 ```cpp
 class MyMock {
@@ -23,30 +25,31 @@ class MyMock {
 };
 ```
 
-첫번째 3개의 파리미터는 메서드를 3부분으로 나누어 선언하는 간단한 방법입니다, 
+첫번째 3개의 파리미터는 메서드를 3부분으로 나누어 선언하는 간단한 방법이다, 
 4번째 파라미터는 만들어지는 메서드에 영향을 주는 한정자(qualifiers)의 목록을 위해
-사용됩니다.
+사용된다.
 
 
-*   **`const`** - 대체 메서드(mocked method)를 `const` 메서드로 만듭니다. `const`
-    메서드를 오버라이딩(overriding) 하기 위해 필요합니다.
-*   **`override`** - `override` 메서드를 표시합니다. `virtual` 메서드를 
-    오버라이딩(overriding) 하기 위해 필요합니다..
-*   **`noexcept`** - `noexcept` 메서를 표시합니다. `noexcept` 메서드를
-    오버라이딩(overriding) 하기 위해 필요합니다.
-*   **`Calltype(...)`** - 메서드의 호출 타입(call type)을 지정합니다. (예,
-    `STDMETHODCALLTYPE`), 윈도우즈에서 유용합니다.
+*   **`const`** - 대체 메서드(mocked method)를 `const` 메서드로 만듦. `const`
+    메서드를 오버라이딩(overriding) 하기 위해 필요.
+*   **`override`** - `override` 메서드를 표시. `virtual` 메서드를 
+    오버라이딩(overriding) 하기 위해 필요.
+*   **`noexcept`** - `noexcept` 메서를 표시. `noexcept` 메서드를
+    오버라이딩(overriding) 하기 위해 필요.
+*   **`Calltype(...)`** - 메서드의 호출 타입(call type)을 지정. (예,
+    `STDMETHODCALLTYPE`), 윈도우즈에서 유용.
 
-### Dealing with unprotected commas (보호받지 않는 콤마를 처리하는 법)
+### Dealing with unprotected commas
+### (보호받지 않는 콤마를 처리하는 법)
 
 괄호로 둘러 쌓이지 않은 콤마같이 보호받지 않는 콤마는 `MOCK_METHOD` 가 정확하게
-아규먼트(Arguments)를 파싱하는 것을 방해합니다.
+아규먼트(Arguments)를 파싱하는 것을 방해한다.
 
 ```cpp {.bad}
 class MockFoo {
  public:
-  MOCK_METHOD(std::pair<bool, int>, GetPair, ());  // 컴파일 되지 않습니다.
-  MOCK_METHOD(bool, CheckMap, (std::map<int, double>, bool));  // 컴파일 되지 않습니다.
+  MOCK_METHOD(std::pair<bool, int>, GetPair, ());  // 컴파일 되지 않음
+  MOCK_METHOD(bool, CheckMap, (std::map<int, double>, bool));  // 컴파일 되지 않음
 };
 ```
 
@@ -61,7 +64,7 @@ class MockFoo {
 ```
 
 일반적으로 C++에서는 리턴값이나 아규먼트(argument)를 Wrapping 하는 것이
-불가능하다는 것을 참고하세요. `MOCK_METHOD` 는 괄호를 제거합니다.
+불가능하다는 것을 참고하세요. `MOCK_METHOD` 는 괄호를 제거한다.
 
 Solution 2 - alias 로 정의:
 
@@ -75,14 +78,15 @@ class MockFoo {
 };
 ```
 
-### Mocking Private or Protected Methods (Private / Protected 메서드를 대체(Mock)하기)
+### Mocking Private or Protected Methods
+### (Private / Protected 메서드를 대체(Mock)하기)
 
 베이스의 클래스의 대체 대상 메서드가 `public`, `protected`, `private` 과
 상관없이, 대체 메서드(Mock Method) 정의법(`MOCK_METHOD`)은 항상 대체 클래스(mock class)의
 `public:` 구역에 들어가야 합니다. public 대체 메서드로 선언하는 것이 대체 클래스(mock class)
 외부에서도 Mock function 의 reference를 `ON_CALL`, `EXPECT_CALL` 을 통해 사용하는 것을
-가능하게 합니다.
-(네, C++ 은 subclass 를 통해 베이스 클래스의 access level 을 변경하는 것이 가능합니다.) 예를 보면:
+가능하게 한다.
+(네, C++ 은 subclass 를 통해 베이스 클래스의 access level 을 변경하는 것이 가능하다.) 예를 보면:
 
 
 ```cpp
@@ -112,7 +116,7 @@ class MockFoo : public Foo {
 
 ### Mocking Overloaded Methods (오버로드 메서드를 대체하기)
 
-오버로드 메서드도 일반적으로 대체(mock)할 수 있습니다. 특별한 주의사항은 없습니다.
+오버로드 메서드도 일반적으로 대체(mock)할 수 있습니다. 특별한 주의사항은 없다.
 
 ```cpp
 class Foo {
@@ -143,7 +147,7 @@ class MockFoo : public Foo {
 **참고:** 만약 모든 오버로드 메서드를 대체(mock)하지 않은다면, 컴파일러가
 베이스 클래스의 숨겨진 몇몇 메서드에 대해 warning 을 발생시킬 것입니다.
 이것을 해결하려면, scope 내에서 숨겨진 메서드를 제공할 `using`을 사용하기
-바랍니다.
+바란다.
 
 ```cpp
 class MockFoo : public Foo {
@@ -155,9 +159,10 @@ class MockFoo : public Foo {
 };
 ```
 
-### Mocking Class Templates (클래스 템플릿을 대체(mock))
+### Mocking Class Templates
+### (클래스 템플릿을 대체(mock))
 
-다른 클래스처럼 클래스 템플릿도 대체(Mock) 할 수 있습니다.
+다른 클래스처럼 클래스 템플릿도 대체(Mock) 할 수 있다.
 
 ```cpp
 template <typename Elem>
@@ -178,15 +183,16 @@ class MockStack : public StackInterface<Elem> {
 };
 ```
 
-### Mocking Non-virtual Methods {#MockingNonVirtualMethods} (Non-virtual 메서드 대체(mock))
+### Mocking Non-virtual Methods {#MockingNonVirtualMethods}
+### (Non-virtual 메서드 대체(mock))
 
 gMock 은 Hi-perf dependency injection에서 사용되는 non-virtual funtion 도
-대체(mock)할 수 있습니다.<!-- GOOGLETEST_CM0017 DO NOT DELETE -->
+대체(mock)할 수 있다.<!-- GOOGLETEST_CM0017 DO NOT DELETE -->
 
 이러한 경우, 실제 클래스로 이루어진 공통적인 베이스 클래스를 공유하는 대신,
 대체 클래스(mock class)는 실제 클래스에 *unrelated* 될 것이고, 반면에 동일한 시그너처를
 가진 메서드를 포함합니다. non-virtual 메서드를 대체(mock)하는 문법은 virtual 메서드를
-대체 하는 것과 동일(*same*) 합니다. (`override` 만 추가하는 것이 아닙니다)
+대체 하는 것과 동일(*same*) 하다. (`override` 만 추가하는 것이 아니다)
 
 
 ```cpp
@@ -210,17 +216,17 @@ class MockPacketStream {
 ```
 
 실제 클래스와는 다르게 대체클래스(mock class)는 `AppendPacket()`를 정의하지 않은 것을
-주의하십시오. 테스트 중에 호출하지 않는다면 정의하지 않는 것도 무방합니다.
+주의하십시오. 테스트 중에 호출하지 않는다면 정의하지 않는 것도 무방하다.
 
 다음으로, 테스트에서는 `MockPacketStream`을 사용하고, 실제 동작에서는 `ConcretePacketStream`를
 사용하는 방법이 필요합니다. function 은 버추얼이 아니고, 두 클래스는 unrelated 이므로,
-컴파일 시점(*compile time*)에서 어떤것을 사용할 것인지 결정해야 합니다. (런타임과 반대로)
+컴파일 시점(*compile time*)에서 어떤것을 사용할 것인지 결정해야 한다. (런타임과 반대로)
 
-한가지 방법은 packet stream 을 사용할 필요가 있는 코드를 템플릿화하는 것입니다,
+한가지 방법은 packet stream 을 사용할 필요가 있는 코드를 템플릿화하는 것이다,
 좀더 특별하게는 packet stream 의 type 을 위한 템플릿 타입의 인자(Argument)를 주는
 것입니다. 실제 코드에서는 `ConcretePacketStream`으로 템플릿으로 인스턴화하고,
-테스트에서는 `MockPacketStream`를 가지는 템플릿으르 인스턴스화 할 수 있습니다.
-예를 들면, 아래와 같이 작성할 수 있습니다.
+테스트에서는 `MockPacketStream`를 가지는 템플릿으르 인스턴스화 할 수 있다.
+예를 들면, 아래와 같이 작성할 수 있다.
 
 
 ```cpp
@@ -237,7 +243,7 @@ class PacketReader {
 그러면, `CreateConnection<ConcretePacketStream>()`를 활용하여
 실제 코드에서는 `PacketReader<ConcretePacketStream>`로 사용하면 되며,
 테스트 코드에서는 `CreateConnection<MockPacketStream>()`를 사용하여
-`PacketReader<MockPacketStream>` 와 같이 사용하면 됩니다.
+`PacketReader<MockPacketStream>` 와 같이 사용하면 된다.
 
 
 ```cpp
@@ -248,13 +254,14 @@ class PacketReader {
   ... exercise reader ...
 ```
 
-### Mocking Free Functions (Free Function 대체(mock))
+### Mocking Free Functions
+### (Free Function 대체(mock))
 
 gMock을 이용하여 Free Function(C-style 함수나 static 메서드)를 대체하는 것도
-가능합니다. 추상 클래스의 인터페이스를 이용하여 코드를 재작성하기만 하면 됩니다.
+가능합니다. 추상 클래스의 인터페이스를 이용하여 코드를 재작성하기만 하면 된다.
 
 Free Function을 직접 호출(say, `OpenFile`)하는 대신, 그것에 대한 인터페이스를 만들고
-Free Function을 호출하는 concrete subclass 를 구성합니다.
+Free Function을 호출하는 concrete subclass 를 구성한다.
 
 
 ```cpp
@@ -274,35 +281,37 @@ class File : public FileInterface {
 ```
 
 파일을 오픈하기 위해서는 `FileInterface`를 사용해야 하며, fuction 을 대체하기도
-쉽습니다.
+쉽다.
 
 혼란이 많은 것 같아 보이지만, 실제에서는 같은 인터페이스를 가지는 multiple related
-function을 종종 사용합니다, 그렇게 하여 per-function 구문적인 오버헤드가 낮아질 것
-입니다.
+function을 종종 사용합니다, 그렇게 하여 per-function 구문적인 오버헤드가 낮아질 것이다.
 
 버추얼 function 에 의해 발생하는 성능 오버헤드가 우려된다면, 프로파일링을 통해
 우려를 확인하고, [mocking non-virtual methods](#MockingNonVirtualMethods) 절차를
-통해 조화롭게 만들수 있습니다.
+통해 조화롭게 만들수 있다.
 
 
-### Old-Style `MOCK_METHODn` Macros (예전 방식의 `MOCK_METHODn` 매크로)
+### Old-Style `MOCK_METHODn` Macros
+### (예전 방식의 `MOCK_METHODn` 매크로)
 
 
-Before the generic `MOCK_METHOD` macro was introduced, mocks where created using
-a family of macros collectively called `MOCK_METHODn`. These macros are still
-supported, though migration to the new `MOCK_METHOD` is recommended.
+일반적인 `MOCK_METHOD` 매크로 소개되기 전에는 `MOCK_METHODn` 로 불리는 매크로 집합을
+사용하여 대체(mock)을 만들었습니다. 새로운 `MOCK_METHOD` 매크로로 변경하는 것을 권장하지만,
+예전 매크로는 여전히 사용이 가능합니다.
 
-The macros in the `MOCK_METHODn` family differ from `MOCK_METHOD`:
 
-*   The general structure is `MOCK_METHODn(MethodName, ReturnType(Args))`,
-    instead of `MOCK_METHOD(ReturnType, MethodName, (Args))`.
-*   The number `n` must equal the number of arguments.
-*   When mocking a const method, one must use `MOCK_CONST_METHODn`.
-*   When mocking a class template, the macro name must be suffixed with `_T`.
-*   In order to specify the call type, the macro name must be suffixed with
-    `_WITH_CALLTYPE`, and the call type is the first macro argument.
+`MOCK_METHODn` 계열 매크로와 `MOCK_METHOD` 매크로의 차이점:
 
-Old macros and their new equivalents:
+*   `MOCK_METHOD(ReturnType, MethodName, (Args))` 대신 일반적인
+    구조는 `MOCK_METHODn(MethodName, ReturnType(Args))` 이다.
+*   숫자 `n`은 인자(argument)의 갯수와 같아야 한다.
+*   const 메서드를 대체(mock)할 때는 `MOCK_CONST_METHODn`를 사용해야 한다.
+*   클래스 템플릿을 대체(mock)할 때는 매크로 이름은 `_T`로 끝나야 한다(suffix).
+*   호출형태(call type)을 지정하기 위해서는 매크로 이름이 `_WITH_CALLTYPE`로
+    끝나야 한다(suffix), 그리고 호출형태는 매크로의 첫번째 인자(argument)가
+    되어야 한다.
+
+예전방식의 매크로와 동일한 형식의 새로운 매크로:
 
 <a name="table99"></a>
 <table border="1" cellspacing="0" cellpadding="1">
@@ -345,18 +354,17 @@ Foo, bool(int))` </td> </tr> <tr> <td> New </td> <td> `MOCK_METHOD(bool, Foo,
 </table>
 
 ### The Nice, the Strict, and the Naggy {#NiceStrictNaggy}
+### 좋은, 엄격한, 불평스러운 
 
-If a mock method has no `EXPECT_CALL` spec but is called, we say that it's an
-"uninteresting call", and the default action (which can be specified using
-`ON_CALL()`) of the method will be taken. Currently, an uninteresting call will
-also by default cause gMock to print a warning. (In the future, we might remove
-this warning by default.)
+대체 메서드(mock method)에 `EXPECT_CALL` 이 없는데 호출 되었다면,
+"uninteresting call" 이라고 하며, 메서드의 기본 동작(`ON_CALL()`을 사용하여 지정될
+수 있는)을 빼앗아 갈 것이다. 현재, uninteresting call은 gMock 이 warnig을 출력하는
+것을 기본으로 하고 있다.(앞으로는, warning을 출력하지 않는 것을 기본으로 할 것이다)
 
-However, sometimes you may want to ignore these uninteresting calls, and
-sometimes you may want to treat them as errors. gMock lets you make the decision
-on a per-mock-object basis.
+그러나, 어떨때는 이러한 uninteresting call을 무시하기를 원하고, 어떨때는
+에러로 처리하기를 원할때에는, per-mock-object basis를 통해 결정할 수 있다.
 
-Suppose your test uses a mock class `MockFoo`:
+테스트가 대체클래스(mock class)로 `MockFoo`를 사용한다고 가정:
 
 ```cpp
 TEST(...) {
@@ -366,9 +374,10 @@ TEST(...) {
 }
 ```
 
-If a method of `mock_foo` other than `DoThis()` is called, you will get a
-warning. However, if you rewrite your test to use `NiceMock<MockFoo>` instead,
-you can suppress the warning:
+`DoThis()`이외의 `mock_foo`의 메서드가 호출된다면, Warning 이 발생한다.
+그러나, `NiceMock<MockFoo>`를 사용하여 테스트를 재작성한다면 Warning을
+막을 수 있다.
+
 
 ```cpp
 using ::testing::NiceMock;
@@ -380,11 +389,11 @@ TEST(...) {
 }
 ```
 
-`NiceMock<MockFoo>` is a subclass of `MockFoo`, so it can be used wherever
-`MockFoo` is accepted.
+`NiceMock<MockFoo>` 은 `MockFoo`의 subclass 이다, 따라서 `MockFoo`가
+사용되는 곳에서는 어디서든 사용가능하다.
 
-It also works if `MockFoo`'s constructor takes some arguments, as
-`NiceMock<MockFoo>` "inherits" `MockFoo`'s constructors:
+`MockFoo`의 생성자가 인자(argument)를 가진다면, `NiceMock<MockFoo>`가
+`MockFoo`의 생성자를 "inherits"(상속)하는것도 가능하다:
 
 ```cpp
 using ::testing::NiceMock;
@@ -396,8 +405,8 @@ TEST(...) {
 }
 ```
 
-The usage of `StrictMock` is similar, except that it makes all uninteresting
-calls failures:
+모든 uninteresting call에 대해 failure 를 내는 것만 제외하면,
+`StrictMock`의 사용법도 동일하다:
 
 ```cpp
 using ::testing::StrictMock;
@@ -407,29 +416,34 @@ TEST(...) {
   EXPECT_CALL(mock_foo, DoThis());
   ... code that uses mock_foo ...
 
-  // The test will fail if a method of mock_foo other than DoThis()
-  // is called.
+  // DoThis()이외의 메서드가 호출된다면,
+  // 테스트를 실패할 것이다.
 }
 ```
 
-NOTE: `NiceMock` and `StrictMock` only affects *uninteresting* calls (calls of
-*methods* with no expectations); they do not affect *unexpected* calls (calls of
-methods with expectations, but they don't match). See
-[Understanding Uninteresting vs Unexpected Calls](#uninteresting-vs-unexpected).
+참조: `NiceMock`과 `StrictMock`은 *uninteresting* calls(전혀 호출을 기대하지 않은
+*methods*에 대한 호출)에만 영향을 미친다; *unexpected* calls(호출을 기대하지만,
+매칭되지 않는 호출)에는 영향을 주지 않는다. 
+[Understanding Uninteresting vs Unexpected Calls](#uninteresting-vs-unexpected)
+참고하라.
 
-There are some caveats though (I dislike them just as much as the next guy, but
-sadly they are side effects of C++'s limitations):
 
-1.  `NiceMock<MockFoo>` and `StrictMock<MockFoo>` only work for mock methods
-    defined using the `MOCK_METHOD` macro **directly** in the `MockFoo` class.
-    If a mock method is defined in a **base class** of `MockFoo`, the "nice" or
-    "strict" modifier may not affect it, depending on the compiler. In
-    particular, nesting `NiceMock` and `StrictMock` (e.g.
-    `NiceMock<StrictMock<MockFoo> >`) is **not** supported.
-2.  `NiceMock<MockFoo>` and `StrictMock<MockFoo>` may not work correctly if the
-    destructor of `MockFoo` is not virtual. We would like to fix this, but it
-    requires cleaning up existing tests. http://b/28934720 tracks the issue.
-3.  During the constructor or destructor of `MockFoo`, the mock object is *not*
+그래도 몇가지 주의사항이 있다 (나도 다른 사람들만큼이나 싫지만, 슬프게도 C++의
+제약사양으로 인해 부수효과(side effect)가 있다):
+
+
+1.  `NiceMock<MockFoo>`과 `StrictMock<MockFoo>`은 `MockFoo` 클래스에서 `MOCK_METHOD`
+    매크로를 **직접적**(**directly**)으로 사용하여 정의했을때만 동작한다. 만약
+    `MockFoo`의 **base class**에서 대체 메서드(mock method)를 정의하면,
+    컴파일의 따라 "nice"나 "strict" modifier가 동작하지 않는다. `NiceMock`과
+    `StrictMock`이 중첩(nesting)되는 경우도 지원하지 않는다( 예를 들어, 
+    `NiceMock<StrictMock<MockFoo> >`는 **지원불가**이다.)
+2.  `MockFoo`의 소멸자(destructor)가 버추얼이 아니라며, `NiceMock<MockFoo>`과
+    `StrictMock<MockFoo>`은 정확하게 동작하지 않을 수 있다. 이런 문제를 고치고 싶지만,
+    기존의 테스트를 클린업하는 것이 필요하다. http://b/28934720 에서 문제점을
+    추적할 수 있다.
+3.  `MockFoo`의 생성자나 소멸자에서는 대체(mock) 오브젝트가 nice하거나 strict **하지않다**.
+    During the constructor or destructor of `MockFoo`, the mock object is *not*
     nice or strict. This may cause surprises if the constructor or destructor
     calls a mock method on `this` object. (This behavior, however, is consistent
     with C++'s general rule: if a constructor or destructor calls a virtual
