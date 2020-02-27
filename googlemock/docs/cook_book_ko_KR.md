@@ -597,15 +597,15 @@ interfaces"를 실천해 왔다: `Concrete` 클래스를 직접 호출하는것 
     확인할 수 있다.(아마 `contrib` 하위 디렉토리) 그리고 많은 프로젝트가 사용하도록
     한다.
 
-부분적인 문제에 대해서 장점과 단점을 주의깊게 평가해야 한다, 그러나 자바 커뮤니티가
+특정한 문제에 대해서 장점과 단점을 주의깊게 평가해야 한다, 그러나 자바 커뮤니티가
 이분에 대해 오랜 시간동안 실천해보고, 이것은 매우 다양한 상황에 적용이 가능한 증명된
 효과적인 테크닉이라고 확신한다. :-)
 
 
 ### Delegating Calls to a Fake {#DelegatingToFake}
+### Fake 위임 호출
 
-Some times you have a non-trivial fake implementation of an interface. For
-example:
+인터페이스에 대한 사소한 Fake 구현. 예를 들면:
 
 ```cpp
 class Foo {
