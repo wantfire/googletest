@@ -37,20 +37,20 @@ class MyMock {
 *   **`Calltype(...)`** - 메서드의 호출 타입(call type)을 지정합니다. (예,
     `STDMETHODCALLTYPE`), 윈도우즈에서 유용합니다.
 
-### Dealing with unprotected commas
+### Dealing with unprotected commas (보호받지 않는 콤마를 처리하는 법)
 
-Unprotected commas, i.e. commas which are not surrounded by parentheses, prevent
-`MOCK_METHOD` from parsing its arguments correctly:
+괄호로 둘러 쌓이지 않은 콤마같이 보호받지 않는 콤마는 `MOCK_METHOD` 가 정확하게
+아규먼트(Arguments)를 파싱하는 것을 방해합니다.
 
 ```cpp {.bad}
 class MockFoo {
  public:
-  MOCK_METHOD(std::pair<bool, int>, GetPair, ());  // Won't compile!
-  MOCK_METHOD(bool, CheckMap, (std::map<int, double>, bool));  // Won't compile!
+  MOCK_METHOD(std::pair<bool, int>, GetPair, ());  // 컴파일 되지 않습니다.
+  MOCK_METHOD(bool, CheckMap, (std::map<int, double>, bool));  // 컴파일 되지 않습니다.
 };
 ```
 
-Solution 1 - wrap with parentheses:
+Solution 1 - 괄호로 Wrapping :
 
 ```cpp {.good}
 class MockFoo {
@@ -60,10 +60,10 @@ class MockFoo {
 };
 ```
 
-Note that wrapping a return or argument type with parentheses is, in general,
-invalid C++. `MOCK_METHOD` removes the parentheses.
+일반적으로 C++에서는 리턴값이나 아규먼트(argument)를 Wrapping 하는 것이
+불가능하다는 것을 참고하세요. `MOCK_METHOD` 는 괄호를 제거합니다.
 
-Solution 2 - define an alias:
+Solution 2 - alias 로 정의:
 
 ```cpp {.good}
 class MockFoo {
@@ -75,14 +75,15 @@ class MockFoo {
 };
 ```
 
-### Mocking Private or Protected Methods
+### Mocking Private or Protected Methods (Private / Protected 메서드를 대체(Mock)하기)
 
-You must always put a mock method definition (`MOCK_METHOD`) in a `public:`
-section of the mock class, regardless of the method being mocked being `public`,
-`protected`, or `private` in the base class. This allows `ON_CALL` and
-`EXPECT_CALL` to reference the mock function from outside of the mock class.
-(Yes, C++ allows a subclass to change the access level of a virtual function in
-the base class.) Example:
+베이스의 클래스의 대체 대상 메서드가 `public`, `protected`, `private` 과
+상관없이, 대체 메서드(Mock Method) 정의법(`MOCK_METHOD`)은 항상 대체 클래스(mock class)의
+`public:` 구역에 들어가야 합니다. public 대체 메서드로 선언하는 것이 대체 클래스(mock class)
+외부에서도 Mock function 의 reference를 `ON_CALL`, `EXPECT_CALL` 을 통해 사용하는 것을
+가능하게 합니다.
+(네, C++ 은 subclass 를 통해 베이스 클래스의 access level 을 변경하는 것이 가능합니다.) 예를 보면:
+
 
 ```cpp
 class Foo {
@@ -109,9 +110,9 @@ class MockFoo : public Foo {
 };
 ```
 
-### Mocking Overloaded Methods
+### Mocking Overloaded Methods (오버로드 메서드를 대체하기)
 
-You can mock overloaded functions as usual. No special attention is required:
+오버로드 메서드도 일반적으로 대체(mock)할 수 있습니다. 특별한 주의사항은 없습니다.
 
 ```cpp
 class Foo {
@@ -139,23 +140,24 @@ class MockFoo : public Foo {
 };
 ```
 
-**Note:** if you don't mock all versions of the overloaded method, the compiler
-will give you a warning about some methods in the base class being hidden. To
-fix that, use `using` to bring them in scope:
+**참고:** 만약 모든 오버로드 메서드를 대체(mock)하지 않은다면, 컴파일러가
+베이스 클래스의 숨겨진 몇몇 메서드에 대해 warning 을 발생시킬 것입니다.
+이것을 해결하려면, scope 내에서 숨겨진 메서드를 제공할 `using`을 사용하기
+바랍니다.
 
 ```cpp
 class MockFoo : public Foo {
   ...
   using Foo::Add;
   MOCK_METHOD(int, Add, (Element x), (override));
-  // We don't want to mock int Add(int times, Element x);
+  // 대체(mock)하지 않을 메서드: int Add(int times, Element x);
   ...
 };
 ```
 
-### Mocking Class Templates
+### Mocking Class Templates (클래스 템플릿을 대체(mock))
 
-You can mock class templates just like any class.
+다른 클래스처럼 클래스 템플릿도 대체(Mock) 할 수 있습니다.
 
 ```cpp
 template <typename Elem>
@@ -176,15 +178,16 @@ class MockStack : public StackInterface<Elem> {
 };
 ```
 
-### Mocking Non-virtual Methods {#MockingNonVirtualMethods}
+### Mocking Non-virtual Methods {#MockingNonVirtualMethods} (Non-virtual 메서드 대체(mock))
 
-gMock can mock non-virtual functions to be used in Hi-perf dependency
-injection.<!-- GOOGLETEST_CM0017 DO NOT DELETE -->
+gMock 은 Hi-perf dependency injection에서 사용되는 non-virtual funtion 도
+대체(mock)할 수 있습니다.<!-- GOOGLETEST_CM0017 DO NOT DELETE -->
 
-In this case, instead of sharing a common base class with the real class, your
-mock class will be *unrelated* to the real class, but contain methods with the
-same signatures. The syntax for mocking non-virtual methods is the *same* as
-mocking virtual methods (just don't add `override`):
+이러한 경우, 실제 클래스로 이루어진 공통적인 베이스 클래스를 공유하는 대신,
+대체 클래스(mock class)는 실제 클래스에 *unrelated* 될 것이고, 반면에 동일한 시그너처를
+가진 메서드를 포함합니다. non-virtual 메서드를 대체(mock)하는 문법은 virtual 메서드를
+대체 하는 것과 동일(*same*) 합니다. (`override` 만 추가하는 것이 아닙니다)
+
 
 ```cpp
 // A simple packet stream class.  None of its members is virtual.
@@ -206,19 +209,19 @@ class MockPacketStream {
 };
 ```
 
-Note that the mock class doesn't define `AppendPacket()`, unlike the real class.
-That's fine as long as the test doesn't need to call it.
+실제 클래스와는 다르게 대체클래스(mock class)는 `AppendPacket()`를 정의하지 않은 것을
+주의하십시오. 테스트 중에 호출하지 않는다면 정의하지 않는 것도 무방합니다.
 
-Next, you need a way to say that you want to use `ConcretePacketStream` in
-production code, and use `MockPacketStream` in tests. Since the functions are
-not virtual and the two classes are unrelated, you must specify your choice at
-*compile time* (as opposed to run time).
+다음으로, 테스트에서는 `MockPacketStream`을 사용하고, 실제 동작에서는 `ConcretePacketStream`를
+사용하는 방법이 필요합니다. function 은 버추얼이 아니고, 두 클래스는 unrelated 이므로,
+컴파일 시점(*compile time*)에서 어떤것을 사용할 것인지 결정해야 합니다. (런타임과 반대로)
 
-One way to do it is to templatize your code that needs to use a packet stream.
-More specifically, you will give your code a template type argument for the type
-of the packet stream. In production, you will instantiate your template with
-`ConcretePacketStream` as the type argument. In tests, you will instantiate the
-same template with `MockPacketStream`. For example, you may write:
+한가지 방법은 packet stream 을 사용할 필요가 있는 코드를 템플릿화하는 것입니다,
+좀더 특별하게는 packet stream 의 type 을 위한 템플릿 타입의 인자(Argument)를 주는
+것입니다. 실제 코드에서는 `ConcretePacketStream`으로 템플릿으로 인스턴화하고,
+테스트에서는 `MockPacketStream`를 가지는 템플릿으르 인스턴스화 할 수 있습니다.
+예를 들면, 아래와 같이 작성할 수 있습니다.
+
 
 ```cpp
 template <class PacketStream>
@@ -231,10 +234,11 @@ class PacketReader {
 };
 ```
 
-Then you can use `CreateConnection<ConcretePacketStream>()` and
-`PacketReader<ConcretePacketStream>` in production code, and use
-`CreateConnection<MockPacketStream>()` and `PacketReader<MockPacketStream>` in
-tests.
+그러면, `CreateConnection<ConcretePacketStream>()`를 활용하여
+실제 코드에서는 `PacketReader<ConcretePacketStream>`로 사용하면 되며,
+테스트 코드에서는 `CreateConnection<MockPacketStream>()`를 사용하여
+`PacketReader<MockPacketStream>` 와 같이 사용하면 됩니다.
+
 
 ```cpp
   MockPacketStream mock_stream;
@@ -244,14 +248,14 @@ tests.
   ... exercise reader ...
 ```
 
-### Mocking Free Functions
+### Mocking Free Functions (Free Function 대체(mock))
 
-It's possible to use gMock to mock a free function (i.e. a C-style function or a
-static method). You just need to rewrite your code to use an interface (abstract
-class).
+gMock을 이용하여 Free Function(C-style 함수나 static 메서드)를 대체하는 것도
+가능합니다. 추상 클래스의 인터페이스를 이용하여 코드를 재작성하기만 하면 됩니다.
 
-Instead of calling a free function (say, `OpenFile`) directly, introduce an
-interface for it and have a concrete subclass that calls the free function:
+Free Function을 직접 호출(say, `OpenFile`)하는 대신, 그것에 대한 인터페이스를 만들고
+Free Function을 호출하는 concrete subclass 를 구성합니다.
+
 
 ```cpp
 class FileInterface {
@@ -269,18 +273,20 @@ class File : public FileInterface {
 };
 ```
 
-Your code should talk to `FileInterface` to open a file. Now it's easy to mock
-out the function.
+파일을 오픈하기 위해서는 `FileInterface`를 사용해야 하며, fuction 을 대체하기도
+쉽습니다.
 
-This may seem like a lot of hassle, but in practice you often have multiple
-related functions that you can put in the same interface, so the per-function
-syntactic overhead will be much lower.
+혼란이 많은 것 같아 보이지만, 실제에서는 같은 인터페이스를 가지는 multiple related
+function을 종종 사용합니다, 그렇게 하여 per-function 구문적인 오버헤드가 낮아질 것
+입니다.
 
-If you are concerned about the performance overhead incurred by virtual
-functions, and profiling confirms your concern, you can combine this with the
-recipe for [mocking non-virtual methods](#MockingNonVirtualMethods).
+버추얼 function 에 의해 발생하는 성능 오버헤드가 우려된다면, 프로파일링을 통해
+우려를 확인하고, [mocking non-virtual methods](#MockingNonVirtualMethods) 절차를
+통해 조화롭게 만들수 있습니다.
 
-### Old-Style `MOCK_METHODn` Macros
+
+### Old-Style `MOCK_METHODn` Macros (예전 방식의 `MOCK_METHODn` 매크로)
+
 
 Before the generic `MOCK_METHOD` macro was introduced, mocks where created using
 a family of macros collectively called `MOCK_METHODn`. These macros are still
