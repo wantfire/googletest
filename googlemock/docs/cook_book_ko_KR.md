@@ -449,35 +449,26 @@ TEST(...) {
     호출한다면, 그 메서드는 non-virtual 메서드처럼 취급된다. 다른말로, 베이스 클래스의
     생성자와 소멸자에 대해서는, `this` 오브젝트가 상속받은 클래스가 아니라 베이스
     클래스의 인스턴스처럼 동작한다. 이런 규칙은 안정성을 위해 필요하다. 그렇지 않다면,
-    베이스 생성자가 상속 클래스가 초기화 되기 전이 그 멤버를 사용할 수 있다.
+    베이스 생성자가 상속 클래스가 초기화 되기 전에 그 멤버를 사용할 수 있거나, 베이스
+    소멸자가 상속 클래스가 Destroy 된 이후에 멤버를 사용할 가능성이 있다.
 
-    
-    During the constructor or destructor of `MockFoo`, the mock object is *not*
-    nice or strict. This may cause surprises if the constructor or destructor
-    calls a mock method on `this` object. (This behavior, however, is consistent
-    with C++'s general rule: if a constructor or destructor calls a virtual
-    method of `this` object, that method is treated as non-virtual. In other
-    words, to the base class's constructor or destructor, `this` object behaves
-    like an instance of the base class, not the derived class. This rule is
-    required for safety. Otherwise a base constructor may use members of a
-    derived class before they are initialized, or a base destructor may use
-    members of a derived class after they have been destroyed.)
+결론은 유지관리하기 어렵거나 다루기 힘든 테스트로 만들려는 경향이 있는 naggy 나
+strict mock을 사용할 때는 **매주 주의**해야 한다. 외부로 보이는 동작을 바꾸지 않고
+코드를 리팩토링 할 때는, 어떤 테스트도 수정하지 않는 것이 이상적이다. 그러나, naggy
+mock과 상호작용을 하는 코드가 있다면, 변경의 결과인 warning을 스팸으로 받기 시작할
+수도 있다. 더 심한것은 strict mock 과 상호작용하는 코드라면, 테스트가 실패하기 시작
+하여 그 문제를 수정을 해야만 할 것이다. 일반적인 추천은 nice mock 을 사용하는 것이다.
+(아직 기본 설정이 아님) 개발하거나 테스트를 디버깅할 때 대부분의 경우 naggy mock을
+사용한다.(현재 기본 설정) 그리고 최후의 수단으로 strict mock 을 사용한다.
 
-Finally, you should be **very cautious** about when to use naggy or strict
-mocks, as they tend to make tests more brittle and harder to maintain. When you
-refactor your code without changing its externally visible behavior, ideally you
-shouldn't need to update any tests. If your code interacts with a naggy mock,
-however, you may start to get spammed with warnings as the result of your
-change. Worse, if your code interacts with a strict mock, your tests may start
-to fail and you'll be forced to fix them. Our general recommendation is to use
-nice mocks (not yet the default) most of the time, use naggy mocks (the current
-default) when developing or debugging tests, and use strict mocks only as the
-last resort.
 
 ### Simplifying the Interface without Breaking Existing Code {#SimplerInterfaces}
+### 기존 코드를 깨지않고 인터페이스를 간단하게
 
-Sometimes a method has a long list of arguments that is mostly uninteresting.
-For example:
+
+가끔씩, 긴 목록의 인자(argument)들를 가지는 메서드는 대부분 흥미롭지 않다.
+
+예를 들면:
 
 ```cpp
 class LogSink {
@@ -490,12 +481,14 @@ class LogSink {
 };
 ```
 
-This method's argument list is lengthy and hard to work with (the `message`
-argument is not even 0-terminated). If we mock it as is, using the mock will be
-awkward. If, however, we try to simplify this interface, we'll need to fix all
-clients depending on it, which is often infeasible.
+이런 메서드의 인자(argument) 목록은 길고, 다루기도 힘들다(심지어 `message` 인자는
+0-terminated도 아니다). 만약 이것을 대체(mock)한다면, mock을 사용하것도 다루기 힘들 것이다.
+그러나, 이런 인터페이스를 간단하게 만든다면, 관련된 모든 클라이언트의 코드를 수정해야 하는
+불가능에 가깝운 상황이 될 것이다.
 
-The trick is to redispatch the method in the mock class:
+
+간단한 방법은 대체 클래스(mock class)에서 메서드를 재발행(redispatch)하는 것이다:
+
 
 ```cpp
 class ScopedMockLog : public LogSink {
@@ -520,12 +513,13 @@ class ScopedMockLog : public LogSink {
 };
 ```
 
-By defining a new mock method with a trimmed argument list, we make the mock
-class more user-friendly.
+줄어든 인자(argument)목록으로 가진 새로운 대체(mock) 메서드를 정의하는 것으로,,
+좀 더 사용자 친화적인 대체 클래스(mock class)를 만든다.
 
-This technique may also be applied to make overloaded methods more amenable to
-mocking. For example, when overloads have been used to implement default
-arguments:
+이런 테크닉은 오버로드된 메서드(overroaded method)를 더욱 변경가능하게 만드는데에도
+적용될 수 있다. 예를 들면, 오버로드 메서드는 기본적인 인자를 구현해하는데 사용되어
+왔다:
+
 
 ```cpp
 class MockTurtleFactory : public TurtleFactory {
@@ -538,8 +532,8 @@ class MockTurtleFactory : public TurtleFactory {
 };
 ```
 
-This allows tests that don't care which overload was invoked to avoid specifying
-argument matchers:
+이러한 점은 지정한 인자(argument) 매처에 상관없이 어떠한 오버로드가 호출되어도
+테스트가 가능하도록 해준다.
 
 ```cpp
 ON_CALL(factory, DoMakeTurtle)
@@ -547,66 +541,66 @@ ON_CALL(factory, DoMakeTurtle)
 ```
 
 ### Alternative to Mocking Concrete Classes
+### Concrete 클래스를 대체(mock)하는 대안
 
-Often you may find yourself using classes that don't implement interfaces. In
-order to test your code that uses such a class (let's call it `Concrete`), you
-may be tempted to make the methods of `Concrete` virtual and then mock it.
+종종 인터페이스를 구현하지 않는 클래스를 사용한다. 그런 클래스(이하 `Concrete`라 한다)를
+사용하는 코드를 테스트하기 위해서, `Concrete`의 메서드를 버추얼로 만들고 그것을 대체(mock)
+하고 싶을 때가 많다.
 
-Try not to do that.
+그렇게 하지 마라.
 
-Making a non-virtual function virtual is a big decision. It creates an extension
-point where subclasses can tweak your class' behavior. This weakens your control
-on the class because now it's harder to maintain the class invariants. You
-should make a function virtual only when there is a valid reason for a subclass
-to override it.
+non-virtual 함수를 virtual 로 만드는 것은 대단히 큰 결심이다. 서브클래스가 클래스의
+동작을 바꿀수 이는 추가적인 점을 만들어 낸다. 클래스 invariant(불변성)를 유지하기
+어렵게 만들어서 클래스의 대한 통제력을 더 약화시킨다. 서브클래스가 오버라이드 해야
+할 적당한 이유가 있을 때는 대항 함수만 버추얼로 변경해야 한다.
 
-Mocking concrete classes directly is problematic as it creates a tight coupling
-between the class and the tests - any small change in the class may invalidate
-your tests and make test maintenance a pain.
+concrete 클래스를 직접 대체(mock)하는 것은 클래스와 테스트간 밀접한 커플링을 만들어 내는
+문제가 있다 - 클래스의 어떤한 작은 변경도 테스트를 무효화 할 수 있고 테스트의 유지보수를
+고통으로 만든다.
 
-To avoid such problems, many programmers have been practicing "coding to
-interfaces": instead of talking to the `Concrete` class, your code would define
-an interface and talk to it. Then you implement that interface as an adaptor on
-top of `Concrete`. In tests, you can easily mock that interface to observe how
-your code is doing.
+이런 문제를 피하기 위해서, 많은 프로그래머들은 "coding to
+interfaces"를 실천해 왔다: `Concrete` 클래스를 직접 호출하는것 대신, 인터페이스를
+만들고 인터페이스를 호출했다. `Concrete`의 상단에 어댑터(adaptor)로써 인터페이스를
+구현하는 것이다. 실제 코드가 어떻게 동작하는지를 알려주는 인터페이스를 테스트에서 쉽게
+대체(mock)할 수 있다.
 
-This technique incurs some overhead:
 
-*   You pay the cost of virtual function calls (usually not a problem).
-*   There is more abstraction for the programmers to learn.
+이러한 방법은 약간의 오버헤드가 발생한다:
 
-However, it can also bring significant benefits in addition to better
-testability:
+*   virtual 함수에 호출에 대한 비용(일반적으로 문제가 되지 않음).
+*   프로그래머가 알아야할 추상화 추가.
 
-*   `Concrete`'s API may not fit your problem domain very well, as you may not
-    be the only client it tries to serve. By designing your own interface, you
-    have a chance to tailor it to your need - you may add higher-level
-    functionalities, rename stuff, etc instead of just trimming the class. This
-    allows you to write your code (user of the interface) in a more natural way,
-    which means it will be more readable, more maintainable, and you'll be more
-    productive.
-*   If `Concrete`'s implementation ever has to change, you don't have to rewrite
-    everywhere it is used. Instead, you can absorb the change in your
-    implementation of the interface, and your other code and tests will be
-    insulated from this change.
+그러나, 더 좋은 testability외이도 막대한 이익을 가져다 줄 수 있다:
 
-Some people worry that if everyone is practicing this technique, they will end
-up writing lots of redundant code. This concern is totally understandable.
-However, there are two reasons why it may not be the case:
 
-*   Different projects may need to use `Concrete` in different ways, so the best
-    interfaces for them will be different. Therefore, each of them will have its
-    own domain-specific interface on top of `Concrete`, and they will not be the
-    same code.
-*   If enough projects want to use the same interface, they can always share it,
-    just like they have been sharing `Concrete`. You can check in the interface
-    and the adaptor somewhere near `Concrete` (perhaps in a `contrib`
-    sub-directory) and let many projects use it.
+*   `Concrete`의 API는 여러분의 Problem domain 에 잘 맞지 않을 수 있다, 여러분이 API를
+    제공하려는 유일한 고객이 아닐 것이다. 자체적인 인터페이스를 디자인하는 것으로, API를
+    요구에 맞게 잘 다듬을 기회를 가진다 - 클래스를 trimming 하는 것 뿐만 아니라 etc, stuff을
+    rename 하는, 높은 수준의 기능성(fucctionlities)를 추가할 수 있다. 좀 더 자연스런운
+    방법으로 (인터페이스의 사용자)코드를 작성할 수 있게 한다, 좀더 readable하고
+    좀더 maintainable 하며, 좀더 productive해 자는 것이다.
 
-You need to weigh the pros and cons carefully for your particular problem, but
-I'd like to assure you that the Java community has been practicing this for a
-long time and it's a proven effective technique applicable in a wide variety of
-situations. :-)
+*   `Concrete`의 구현이 늘 변해야 한다면, 사용되는 모든 곳에서 재작성할 필요가 없다.
+    대신 인터페이스의 구현에서 변경사항을 흡수 할 수 있다, 그리고 다른 코드나 테스트는
+    이러 변경으로 부터 보호 될 것이다.
+
+모든사람이 이런 테크닉을 사용한다면 결국에는 모두다 많은 불필요한 코드를 생산하게 
+될 것이라고 일부 사람들은 걱정한다. 이런 걱정은 전적으로 이해할 수 있다. 그러나, 문제가
+되지 않을 것이라는 두가지 이유가 있다:
+
+*   다른 프로젝트에서 다른 방법으로 `Concrete`를 사용할 수 있으며, 그를 위한 최선의
+    인터페이스도 다를 것이다. 그러므로, 각각 `Concrete`의 상단에 각자의 domain-specific
+    인터페이스를 가질 것이다. 그리고 같은 코드가 되지 않을 것이다.
+
+*   프로젝트가 같은 인터페이스를 사용하기에 충분하다면, 공유된 `Concrete`를 사용한
+    것처럼 인터페이스를 항상 공유할 것이다. 인터페이스와 `Concrete` 주위의 어댑터에서
+    확인할 수 있다.(아마 `contrib` 하위 디렉토리) 그리고 많은 프로젝트가 사용하도록
+    한다.
+
+부분적인 문제에 대해서 장점과 단점을 주의깊게 평가해야 한다, 그러나 자바 커뮤니티가
+이분에 대해 오랜 시간동안 실천해보고, 이것은 매우 다양한 상황에 적용이 가능한 증명된
+효과적인 테크닉이라고 확신한다. :-)
+
 
 ### Delegating Calls to a Fake {#DelegatingToFake}
 
